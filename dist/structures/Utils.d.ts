@@ -24,18 +24,6 @@ export declare abstract class TrackUtils {
      */
     static isTrack(track: unknown): boolean;
     /**
-    * Checks if the provided track is unique.
-    * @param track
-    * @param queue
-    */
-    static isUnique(track: Track, queue: Queue): boolean;
-    /**
-    * Returns only unique tracks.
-    * @param track
-    * @param queue
-    */
-    static getUnique(track: unknown, queue: Queue): Track[];
-    /**
      * Builds a Track from the raw data from Lavalink and a optional requester.
      * @param data
      * @param requester
