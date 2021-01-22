@@ -230,7 +230,7 @@ export abstract class Structure {
   }
 }
 
-export class Plugin {
+export abstract class Plugin {
   public load(manager: Manager): void {}
 
   public unload(manager: Manager): void {}
@@ -240,6 +240,7 @@ const structures = {
   Player: require("./Player").Player,
   Queue: require("./Queue").Queue,
   Node: require("./Node").Node,
+  
 };
 
 export interface UnresolvedQuery {
