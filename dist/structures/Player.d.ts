@@ -1,7 +1,7 @@
-import { Manager, SearchQuery, SearchResult } from './Manager';
-import { Node } from './Node';
-import { Queue } from './Queue';
-import { Sizes, State, VoiceState } from './Utils';
+import { Manager, SearchQuery, SearchResult } from "./Manager";
+import { Node } from "./Node";
+import { Queue } from "./Queue";
+import { Sizes, State, VoiceState } from "./Utils";
 export declare class Player {
     options: PlayerOptions;
     /** The Queue for the Player. */
@@ -67,11 +67,6 @@ export declare class Player {
     setEQ(...bands: EqualizerBand[]): this;
     /** Clears the equalizer bands. */
     clearEQ(): this;
-    /** Sets filters
-     * @param op
-     * @param body
-     */
-    setFilter(op: string, body?: {}): this;
     /** Connect to the voice channel. */
     connect(): this;
     /** Disconnect from the voice channel. */
