@@ -10,15 +10,12 @@ const Utils_1 = require("./Utils");
 function check(options) {
     if (!options)
         throw new TypeError("NodeOptions must not be empty.");
-    if (typeof options.host !== "string" ||
-        !/.+/.test(options.host))
+    if (typeof options.host !== "string" || !/.+/.test(options.host))
         throw new TypeError('Node option "host" must be present and be a non-empty string.');
-    if (typeof options.port !== "undefined" &&
-        typeof options.port !== "number")
+    if (typeof options.port !== "undefined" && typeof options.port !== "number")
         throw new TypeError('Node option "port" must be a number.');
     if (typeof options.password !== "undefined" &&
-        (typeof options.password !== "string" ||
-            !/.+/.test(options.password)))
+        (typeof options.password !== "string" || !/.+/.test(options.password)))
         throw new TypeError('Node option "password" must be a non-empty string.');
     if (typeof options.secure !== "undefined" &&
         typeof options.secure !== "boolean")
@@ -97,6 +94,7 @@ class Node {
             Authorization: this.options.password,
             "Num-Shards": String(this.manager.options.shards),
             "User-Id": this.manager.options.clientId,
+            "Client-Name": "Erela.js-filters",
         };
         this.socket = new ws_1.default(`ws${this.options.secure ? "s" : ""}://${this.options.host}:${this.options.port}/`, { headers });
         this.socket.on("open", this.open.bind(this));
@@ -108,9 +106,9 @@ class Node {
     destroy() {
         if (!this.connected)
             return;
-        const players = this.manager.players.filter(p => p.node == this);
+        const players = this.manager.players.filter((p) => p.node == this);
         if (players.size)
-            players.forEach(p => p.destroy());
+            players.forEach((p) => p.destroy());
         this.socket.close(1000, "destroy");
         this.socket.removeAllListeners();
         this.socket = null;
