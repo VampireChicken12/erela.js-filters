@@ -16,22 +16,17 @@ import {
 function check(options: NodeOptions) {
   if (!options) throw new TypeError("NodeOptions must not be empty.");
 
-  if (
-    typeof options.host !== "string" ||
-    !/.+/.test(options.host)
-  )
-    throw new TypeError('Node option "host" must be present and be a non-empty string.');
+  if (typeof options.host !== "string" || !/.+/.test(options.host))
+    throw new TypeError(
+      'Node option "host" must be present and be a non-empty string.'
+    );
 
-  if (
-    typeof options.port !== "undefined" &&
-    typeof options.port !== "number"
-  )
+  if (typeof options.port !== "undefined" && typeof options.port !== "number")
     throw new TypeError('Node option "port" must be a number.');
 
   if (
     typeof options.password !== "undefined" &&
-    (typeof options.password !== "string" ||
-    !/.+/.test(options.password))
+    (typeof options.password !== "string" || !/.+/.test(options.password))
   )
     throw new TypeError('Node option "password" must be a non-empty string.');
 
@@ -67,7 +62,7 @@ export class Node {
   public calls = 0;
   /** The stats for the node. */
   public stats: NodeStats;
-  public manager: Manager
+  public manager: Manager;
   private static _manager: Manager;
   private reconnectTimeout?: NodeJS.Timeout;
   private reconnectAttempts = 1;
@@ -141,6 +136,7 @@ export class Node {
       Authorization: this.options.password,
       "Num-Shards": String(this.manager.options.shards),
       "User-Id": this.manager.options.clientId,
+      "Client-Name": "Erela.js-filters",
     };
 
     this.socket = new WebSocket(
@@ -159,8 +155,8 @@ export class Node {
   public destroy(): void {
     if (!this.connected) return;
 
-    const players = this.manager.players.filter(p => p.node == this);
-    if (players.size) players.forEach(p => p.destroy());
+    const players = this.manager.players.filter((p) => p.node == this);
+    if (players.size) players.forEach((p) => p.destroy());
 
     this.socket.close(1000, "destroy");
     this.socket.removeAllListeners();
@@ -195,7 +191,7 @@ export class Node {
       if (this.reconnectAttempts >= this.options.retryAmount) {
         const error = new Error(
           `Unable to connect after ${this.options.retryAmount} attempts.`
-        )
+        );
 
         this.manager.emit("nodeError", this, error);
         return this.destroy();
@@ -279,13 +275,21 @@ export class Node {
     }
   }
 
-  protected trackStart(player: Player, track: Track, payload: TrackStartEvent): void {
+  protected trackStart(
+    player: Player,
+    track: Track,
+    payload: TrackStartEvent
+  ): void {
     player.playing = true;
     player.paused = false;
     this.manager.emit("trackStart", player, track, payload);
   }
 
-  protected trackEnd(player: Player, track: Track, payload: TrackEndEvent): void {
+  protected trackEnd(
+    player: Player,
+    track: Track,
+    payload: TrackEndEvent
+  ): void {
     // If a track had an error while starting
     if (["LOAD_FAILED", "CLEAN_UP"].includes(payload.reason)) {
       player.queue.previous = player.queue.current;
@@ -349,14 +353,21 @@ export class Node {
     if (!player.queue.length) return this.queueEnd(player, track, payload);
   }
 
-
-  protected queueEnd(player: Player, track: Track, payload: TrackEndEvent): void {
+  protected queueEnd(
+    player: Player,
+    track: Track,
+    payload: TrackEndEvent
+  ): void {
     player.queue.current = null;
     player.playing = false;
     this.manager.emit("queueEnd", player, track, payload);
   }
 
-  protected trackStuck(player: Player, track: Track, payload: TrackStuckEvent): void {
+  protected trackStuck(
+    player: Player,
+    track: Track,
+    payload: TrackStuckEvent
+  ): void {
     player.stop();
     this.manager.emit("trackStuck", player, track, payload);
   }
