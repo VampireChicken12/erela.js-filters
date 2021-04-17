@@ -42,8 +42,8 @@ function check(options: PlayerOptions) {
   )
     throw new TypeError('Player option "selfDeafen" must be a boolean.');
 }
-function timer(callback: Function, delay: number): timer {
-  let id: number,
+function timer(callback: any, delay: number): timer {
+  let id: NodeJS.Timeout,
     started: Date,
     remaining = delay,
     running: boolean;
