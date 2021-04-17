@@ -3,6 +3,9 @@ import { Manager, SearchQuery, SearchResult } from "./Manager";
 import { Node } from "./Node";
 import { Queue } from "./Queue";
 import { Sizes, State, VoiceState } from "./Utils";
+export declare class timer {
+    constructor(callback: any, delay: number);
+}
 export declare class Player {
     options: PlayerOptions;
     /** The Queue for the Player. */

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Player = void 0;
+exports.Player = exports.timer = void 0;
 const Utils_1 = require("./Utils");
 function check(options) {
     if (!options)
@@ -32,37 +32,41 @@ function check(options) {
         typeof options.selfDeafen !== "boolean")
         throw new TypeError('Player option "selfDeafen" must be a boolean.');
 }
-function timer(callback, delay) {
-    let id, started, remaining = delay, running;
-    this.start = function () {
-        running = true;
-        started = new Date();
-        id = setTimeout(callback, remaining);
+class timer {
+    constructor(callback, delay) {
+        let id, started, remaining = delay, running;
+        this.start = function () {
+            running = true;
+            started = new Date();
+            id = setTimeout(callback, remaining);
+            return this;
+        };
+        this.pause = function () {
+            running = false;
+            clearTimeout(id);
+            remaining -= new Date().getTime() - started.getTime();
+        };
+        this.getTimeLeft = function () {
+            if (running) {
+                this.pause();
+                this.start();
+            }
+            return remaining;
+        };
+        this.setRemaining = function (time) {
+            this.remaining = time;
+        };
+        this.getStateRunning = function () {
+            return running;
+        };
+        this.destroy = function () {
+            clearTimeout(id);
+        };
+        this.start();
         return this;
-    };
-    this.pause = function () {
-        running = false;
-        clearTimeout(id);
-        remaining -= new Date().getTime() - started.getTime();
-    };
-    this.getTimeLeft = function () {
-        if (running) {
-            this.pause();
-            this.start();
-        }
-        return remaining;
-    };
-    this.setRemaining = function (time) {
-        this.remaining = time;
-    };
-    this.getStateRunning = function () {
-        return running;
-    };
-    this.destroy = function () {
-        clearTimeout(id);
-    };
-    return this.start();
+    }
 }
+exports.timer = timer;
 class Player {
     /**
      * Creates a new player, returns one if it already exists.
@@ -316,13 +320,13 @@ class Player {
             this.queueRepeat = false;
             if (this.trackRepeatTimer) {
                 this.trackRepeatTimer.destroy();
-                this.trackRepeatTimer = timer(() => {
+                this.trackRepeatTimer = new timer(() => {
                     this.trackRepeat = false;
                     return this;
                 }, duration);
             }
             else {
-                this.trackRepeatTimer = timer(() => {
+                this.trackRepeatTimer = new timer(() => {
                     this.trackRepeat = false;
                     return this;
                 }, duration);
@@ -355,13 +359,13 @@ class Player {
             this.queueRepeat = true;
             if (this.queueRepeatTimer) {
                 this.queueRepeatTimer.destroy();
-                this.queueRepeatTimer = timer(() => {
+                this.queueRepeatTimer = new timer(() => {
                     this.queueRepeat = false;
                     return this;
                 }, duration);
             }
             else {
-                this.queueRepeatTimer = timer(() => {
+                this.queueRepeatTimer = new timer(() => {
                     this.queueRepeat = false;
                     return this;
                 }, duration);
