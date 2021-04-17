@@ -441,13 +441,15 @@ class Player {
         this.position = position;
         if (this.trackRepeatTimer && !this.queueRepeatTimer) {
             const timeleft = this.trackRepeatTimer.getTimeLeft();
-            const adjustedtime = timeleft - this.position;
+            const songtimeleft = this.queue.current.duration - this.position;
+            const adjustedtime = timeleft - songtimeleft;
             this.trackRepeatTimer.setRemaining(adjustedtime);
             this.trackRepeatTimer.getTimeLeft();
         }
         if (this.queueRepeatTimer && !this.trackRepeatTimer) {
             const timeleft = this.queueRepeatTimer.getTimeLeft();
-            const adjustedtime = timeleft - this.position;
+            const songtimeleft = this.queue.current.duration - this.position;
+            const adjustedtime = timeleft - songtimeleft;
             this.queueRepeatTimer.setRemaining(adjustedtime);
             this.queueRepeatTimer.getTimeLeft();
         }
