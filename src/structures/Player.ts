@@ -42,45 +42,47 @@ function check(options: PlayerOptions) {
   )
     throw new TypeError('Player option "selfDeafen" must be a boolean.');
 }
-function timer(callback: any, delay: number): timer {
-  let id: NodeJS.Timeout,
-    started: Date,
-    remaining = delay,
-    running: boolean;
+export class timer {
+  constructor(callback: any, delay: number) {
+    let id: NodeJS.Timeout,
+      started: Date,
+      remaining = delay,
+      running: boolean;
 
-  this.start = function () {
-    running = true;
-    started = new Date();
-    id = setTimeout(callback, remaining);
+    this.start = function () {
+      running = true;
+      started = new Date();
+      id = setTimeout(callback, remaining);
+      return this;
+    };
+
+    this.pause = function () {
+      running = false;
+      clearTimeout(id);
+      remaining -= new Date().getTime() - started.getTime();
+    };
+
+    this.getTimeLeft = function () {
+      if (running) {
+        this.pause();
+        this.start();
+      }
+
+      return remaining;
+    };
+    this.setRemaining = function (time: number) {
+      this.remaining = time;
+    };
+    this.getStateRunning = function () {
+      return running;
+    };
+    this.destroy = function () {
+      clearTimeout(id);
+    };
+    this.start();
     return this;
-  };
-
-  this.pause = function () {
-    running = false;
-    clearTimeout(id);
-    remaining -= new Date().getTime() - started.getTime();
-  };
-
-  this.getTimeLeft = function () {
-    if (running) {
-      this.pause();
-      this.start();
-    }
-
-    return remaining;
-  };
-  this.setRemaining = function (time: number) {
-    this.remaining = time;
-  };
-  this.getStateRunning = function () {
-    return running;
-  };
-  this.destroy = function () {
-    clearTimeout(id);
-  };
-  return this.start();
+  }
 }
-
 export class Player {
   /** The Queue for the Player. */
   public readonly queue = new (Structure.get("Queue"))() as Queue;
@@ -418,12 +420,12 @@ export class Player {
       this.queueRepeat = false;
       if (this.trackRepeatTimer) {
         this.trackRepeatTimer.destroy();
-        this.trackRepeatTimer = timer(() => {
+        this.trackRepeatTimer = new timer(() => {
           this.trackRepeat = false;
           return this;
         }, duration);
       } else {
-        this.trackRepeatTimer = timer(() => {
+        this.trackRepeatTimer = new timer(() => {
           this.trackRepeat = false;
           return this;
         }, duration);
@@ -456,12 +458,12 @@ export class Player {
       this.queueRepeat = true;
       if (this.queueRepeatTimer) {
         this.queueRepeatTimer.destroy();
-        this.queueRepeatTimer = timer(() => {
+        this.queueRepeatTimer = new timer(() => {
           this.queueRepeat = false;
           return this;
         }, duration);
       } else {
-        this.queueRepeatTimer = timer(() => {
+        this.queueRepeatTimer = new timer(() => {
           this.queueRepeat = false;
           return this;
         }, duration);
