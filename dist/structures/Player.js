@@ -34,7 +34,8 @@ function check(options) {
 }
 class timer {
     constructor(callback, delay) {
-        let id, started, remaining = delay, origianlremaining = delay, running;
+        let id, started, remaining = delay, running;
+        const origianlremaining = delay;
         this.start = function () {
             running = true;
             started = new Date();

@@ -4,7 +4,7 @@ import { Node } from "./Node";
 import { Queue } from "./Queue";
 import { Sizes, State, VoiceState } from "./Utils";
 export declare class timer {
-    constructor(callback: any, delay: number);
+    constructor(callback: () => void, delay: number);
 }
 export declare class Player {
     options: PlayerOptions;
