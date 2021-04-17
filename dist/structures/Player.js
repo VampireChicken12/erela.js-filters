@@ -274,6 +274,8 @@ class Player {
     setTrackRepeat(repeat, duration) {
         if (typeof repeat !== "boolean")
             throw new TypeError('Repeat can only be "true" or "false".');
+        if (duration && typeof duration !== "number")
+            throw new TypeError("Duration can only be a number");
         if (repeat && duration) {
             this.trackRepeat = true;
             this.queueRepeat = false;
@@ -295,6 +297,8 @@ class Player {
     setQueueRepeat(repeat, duration) {
         if (typeof repeat !== "boolean")
             throw new TypeError('Repeat can only be "true" or "false".');
+        if (duration && typeof duration !== "number")
+            throw new TypeError("Duration can only be a number");
         if (repeat && duration) {
             this.trackRepeat = false;
             this.queueRepeat = true;
