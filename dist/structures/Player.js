@@ -34,7 +34,7 @@ function check(options) {
 }
 class timer {
     constructor(callback, delay) {
-        let id, started, remaining = delay, running;
+        let id, started, remaining = delay, origianlremaining = delay, running;
         this.start = function () {
             running = true;
             started = new Date();
@@ -52,6 +52,9 @@ class timer {
                 this.start();
             }
             return remaining;
+        };
+        this.resetRemaining = function () {
+            this.remaining = origianlremaining;
         };
         this.setRemaining = function (time) {
             this.remaining = time;
@@ -441,16 +444,22 @@ class Player {
         this.position = position;
         if (this.trackRepeatTimer && !this.queueRepeatTimer) {
             const timeleft = this.trackRepeatTimer.getTimeLeft();
-            const songtimeleft = this.queue.current.duration - this.position;
-            const adjustedtime = timeleft - songtimeleft;
-            this.trackRepeatTimer.setRemaining(adjustedtime);
+            const adjustedtime = this.position === 0
+                ? timeleft + this.queue.current.duration
+                : timeleft - this.position;
+            this.position === 0
+                ? this.trackRepeatTimer.resetRemaining()
+                : this.trackRepeatTimer.setRemaining(adjustedtime);
             this.trackRepeatTimer.getTimeLeft();
         }
         if (this.queueRepeatTimer && !this.trackRepeatTimer) {
             const timeleft = this.queueRepeatTimer.getTimeLeft();
-            const songtimeleft = this.queue.current.duration - this.position;
-            const adjustedtime = timeleft - songtimeleft;
-            this.queueRepeatTimer.setRemaining(adjustedtime);
+            const adjustedtime = this.position === 0
+                ? timeleft + this.queue.current.duration
+                : timeleft - this.position;
+            this.position === 0
+                ? this.queueRepeatTimer.resetRemaining()
+                : this.queueRepeatTimer.setRemaining(adjustedtime);
             this.queueRepeatTimer.getTimeLeft();
         }
         this.node.send({

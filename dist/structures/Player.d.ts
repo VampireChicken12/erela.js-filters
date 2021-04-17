@@ -217,4 +217,5 @@ export interface timer {
     getTimeLeft(): number;
     getStateRunning(): boolean;
     setRemaining(time: number): void;
+    resetRemaining(): void;
 }
