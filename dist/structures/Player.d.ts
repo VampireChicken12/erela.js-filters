@@ -1,7 +1,7 @@
-import { Manager, SearchQuery, SearchResult } from './Manager';
-import { Node } from './Node';
-import { Queue } from './Queue';
-import { Sizes, State, VoiceState } from './Utils';
+import { Manager, SearchQuery, SearchResult } from "./Manager";
+import { Node } from "./Node";
+import { Queue } from "./Queue";
+import { Sizes, State, VoiceState } from "./Utils";
 export declare class Player {
     options: PlayerOptions;
     /** The Queue for the Player. */
@@ -114,13 +114,15 @@ export declare class Player {
     /**
      * Sets the track repeat.
      * @param repeat
+     * @param duration the duration to repeat
      */
-    setTrackRepeat(repeat: boolean): this;
+    setTrackRepeat(repeat: boolean, duration: number): this;
     /**
      * Sets the queue repeat.
      * @param repeat
+     * @param duration the duration to repeat
      */
-    setQueueRepeat(repeat: boolean): this;
+    setQueueRepeat(repeat: boolean, duration: number): this;
     /** Stops the current track, optionally give an amount to skip to, e.g 5 would play the 5th song. */
     stop(amount?: number): this;
     /**
