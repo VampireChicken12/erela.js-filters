@@ -43,21 +43,20 @@ function check(options: PlayerOptions) {
     throw new TypeError('Player option "selfDeafen" must be a boolean.');
 }
 export class timer {
-  constructor(callback: any, delay: number) {
+  constructor(callback: () => void, delay: number) {
     let id: NodeJS.Timeout,
       started: Date,
       remaining = delay,
-      origianlremaining = delay,
       running: boolean;
-
-    this.start = function () {
+    const origianlremaining = delay;
+    this.start = function (): NodeJS.Timeout {
       running = true;
       started = new Date();
       id = setTimeout(callback, remaining);
       return this;
     };
 
-    this.pause = function () {
+    this.pause = function (): void {
       running = false;
       clearTimeout(id);
       remaining -= new Date().getTime() - started.getTime();
@@ -71,16 +70,16 @@ export class timer {
 
       return remaining;
     };
-    this.resetRemaining = function () {
+    this.resetRemaining = function (): void {
       this.remaining = origianlremaining;
     };
-    this.setRemaining = function (time: number) {
+    this.setRemaining = function (time: number): void {
       this.remaining = time;
     };
-    this.getStateRunning = function () {
+    this.getStateRunning = function (): boolean {
       return running;
     };
-    this.destroy = function () {
+    this.destroy = function (): void {
       clearTimeout(id);
     };
     this.start();
