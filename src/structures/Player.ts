@@ -47,6 +47,7 @@ export class timer {
     let id: NodeJS.Timeout,
       started: Date,
       remaining = delay,
+      origianlremaining = delay,
       running: boolean;
 
     this.start = function () {
@@ -69,6 +70,9 @@ export class timer {
       }
 
       return remaining;
+    };
+    this.resetRemaining = function () {
+      this.remaining = origianlremaining;
     };
     this.setRemaining = function (time: number) {
       this.remaining = time;
@@ -544,16 +548,24 @@ export class Player {
     this.position = position;
     if (this.trackRepeatTimer && !this.queueRepeatTimer) {
       const timeleft = this.trackRepeatTimer.getTimeLeft();
-      const songtimeleft = this.queue.current.duration - this.position;
-      const adjustedtime = timeleft - songtimeleft;
-      this.trackRepeatTimer.setRemaining(adjustedtime);
+      const adjustedtime =
+        this.position === 0
+          ? timeleft + this.queue.current.duration
+          : timeleft - this.position;
+      this.position === 0
+        ? this.trackRepeatTimer.resetRemaining()
+        : this.trackRepeatTimer.setRemaining(adjustedtime);
       this.trackRepeatTimer.getTimeLeft();
     }
     if (this.queueRepeatTimer && !this.trackRepeatTimer) {
       const timeleft = this.queueRepeatTimer.getTimeLeft();
-      const songtimeleft = this.queue.current.duration - this.position;
-      const adjustedtime = timeleft - songtimeleft;
-      this.queueRepeatTimer.setRemaining(adjustedtime);
+      const adjustedtime =
+        this.position === 0
+          ? timeleft + this.queue.current.duration
+          : timeleft - this.position;
+      this.position === 0
+        ? this.queueRepeatTimer.resetRemaining()
+        : this.queueRepeatTimer.setRemaining(adjustedtime);
       this.queueRepeatTimer.getTimeLeft();
     }
     this.node.send({
@@ -643,4 +655,5 @@ export interface timer {
   getTimeLeft(): number;
   getStateRunning(): boolean;
   setRemaining(time: number): void;
+  resetRemaining(): void;
 }
