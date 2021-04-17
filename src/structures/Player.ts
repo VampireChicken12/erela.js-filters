@@ -42,14 +42,56 @@ function check(options: PlayerOptions) {
   )
     throw new TypeError('Player option "selfDeafen" must be a boolean.');
 }
+function timer(callback: Function, delay: number): timer {
+  var id: any,
+    started: Date,
+    remaining = delay,
+    running: boolean;
+
+  this.start = function () {
+    running = true;
+    started = new Date();
+    id = setTimeout(callback, remaining);
+    return this;
+  };
+
+  this.pause = function () {
+    running = false;
+    clearTimeout(id);
+    remaining -= new Date().getTime() - started.getTime();
+  };
+
+  this.getTimeLeft = function () {
+    if (running) {
+      this.pause();
+      this.start();
+    }
+
+    return remaining;
+  };
+  this.setRemaining = function (time: number) {
+    this.remaining = time;
+  };
+  this.getStateRunning = function () {
+    return running;
+  };
+  this.destroy = function () {
+    clearTimeout(id);
+  };
+  return this.start();
+}
 
 export class Player {
   /** The Queue for the Player. */
   public readonly queue = new (Structure.get("Queue"))() as Queue;
   /** Whether the queue repeats the track. */
   public trackRepeat = false;
+  /** Whether the queue repeat timeout is running*/
+  public trackRepeatTimer: timer | null = null;
   /** Whether the queue repeats the queue. */
   public queueRepeat = false;
+  /** Whether the queue repeat timeout is running*/
+  public queueRepeatTimer: timer | null = null;
   /** The time the player is in the track. */
   public position = 0;
   /** Whether the player is playing. */
@@ -374,10 +416,22 @@ export class Player {
     if (repeat && duration) {
       this.trackRepeat = true;
       this.queueRepeat = false;
-      setTimeout(() => {
-        this.trackRepeat = false;
-      }, duration);
+      if (this.trackRepeatTimer) {
+        this.trackRepeatTimer.destroy();
+        this.trackRepeatTimer = timer(() => {
+          this.trackRepeat = false;
+          return this;
+        }, duration);
+      } else {
+        this.trackRepeatTimer = timer(() => {
+          this.trackRepeat = false;
+          return this;
+        }, duration);
+      }
     } else if (repeat && !duration) {
+      this.trackRepeat = true;
+      this.queueRepeat = false;
+    } else if (!repeat && !duration) {
       this.trackRepeat = false;
       this.queueRepeat = false;
     }
@@ -395,13 +449,27 @@ export class Player {
       throw new TypeError('Repeat can only be "true" or "false".');
     if (duration && typeof duration !== "number")
       throw new TypeError("Duration can only be a number");
+    if (duration < this.queue.duration)
+      throw new TypeError("Duration cannot be smaller than the queue duration");
     if (repeat && duration) {
       this.trackRepeat = false;
       this.queueRepeat = true;
-      setTimeout(() => {
-        this.queueRepeat = false;
-      }, duration);
+      if (this.queueRepeatTimer) {
+        this.queueRepeatTimer.destroy();
+        this.queueRepeatTimer = timer(() => {
+          this.queueRepeat = false;
+          return this;
+        }, duration);
+      } else {
+        this.queueRepeatTimer = timer(() => {
+          this.queueRepeat = false;
+          return this;
+        }, duration);
+      }
     } else if (repeat && !duration) {
+      this.trackRepeat = false;
+      this.queueRepeat = true;
+    } else if (!repeat && !duration) {
       this.trackRepeat = false;
       this.queueRepeat = false;
     }
@@ -415,7 +483,12 @@ export class Player {
         throw new RangeError("Cannot skip more than the queue length.");
       this.queue.splice(0, amount - 1);
     }
-
+    if (this.trackRepeatTimer && !this.queueRepeatTimer) {
+      this.trackRepeatTimer.destroy();
+    }
+    if (this.queueRepeatTimer && !this.trackRepeatTimer) {
+      this.queueRepeatTimer.destroy();
+    }
     this.node.send({
       op: "stop",
       guildId: this.guild,
@@ -437,7 +510,12 @@ export class Player {
 
     this.playing = !pause;
     this.paused = pause;
-
+    if (this.trackRepeatTimer && !this.queueRepeatTimer) {
+      this.trackRepeatTimer.pause();
+    }
+    if (this.queueRepeatTimer && !this.trackRepeatTimer) {
+      this.queueRepeatTimer.pause();
+    }
     this.node.send({
       op: "pause",
       guildId: this.guild,
@@ -462,6 +540,18 @@ export class Player {
       position = Math.max(Math.min(position, this.queue.current.duration), 0);
 
     this.position = position;
+    if (this.trackRepeatTimer && !this.queueRepeatTimer) {
+      const timeleft = this.trackRepeatTimer.getTimeLeft();
+      const adjustedtime = timeleft - this.position;
+      this.trackRepeatTimer.setRemaining(adjustedtime);
+      this.trackRepeatTimer.getTimeLeft();
+    }
+    if (this.queueRepeatTimer && !this.trackRepeatTimer) {
+      const timeleft = this.queueRepeatTimer.getTimeLeft();
+      const adjustedtime = timeleft - this.position;
+      this.queueRepeatTimer.setRemaining(adjustedtime);
+      this.queueRepeatTimer.getTimeLeft();
+    }
     this.node.send({
       op: "seek",
       guildId: this.guild,
@@ -541,4 +631,12 @@ export interface EqualizerBand {
   band: number;
   /** The gain amount being -0.25 to 1.00, 0.25 being double. */
   gain: number;
+}
+export interface timer {
+  destroy(): void;
+  start(): NodeJS.Timeout;
+  pause(): void;
+  getTimeLeft(): number;
+  getStateRunning(): boolean;
+  setRemaining(time: number): void;
 }
