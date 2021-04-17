@@ -413,7 +413,7 @@ export class Player {
    * @param repeat
    * @param duration the duration to repeat
    */
-  public setTrackRepeat(repeat: boolean, duration: number): this {
+  public setTrackRepeat(repeat: boolean, duration?: number): this {
     if (typeof repeat !== "boolean")
       throw new TypeError('Repeat can only be "true" or "false".');
     if (duration && typeof duration !== "number")
@@ -449,7 +449,7 @@ export class Player {
    * @param repeat
    * @param duration the duration to repeat
    */
-  public setQueueRepeat(repeat: boolean, duration: number): this {
+  public setQueueRepeat(repeat: boolean, duration?: number): this {
     if (typeof repeat !== "boolean")
       throw new TypeError('Repeat can only be "true" or "false".');
     if (duration && typeof duration !== "number")
