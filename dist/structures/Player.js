@@ -32,6 +32,37 @@ function check(options) {
         typeof options.selfDeafen !== "boolean")
         throw new TypeError('Player option "selfDeafen" must be a boolean.');
 }
+function timer(callback, delay) {
+    var id, started, remaining = delay, running;
+    this.start = function () {
+        running = true;
+        started = new Date();
+        id = setTimeout(callback, remaining);
+        return this;
+    };
+    this.pause = function () {
+        running = false;
+        clearTimeout(id);
+        remaining -= new Date().getTime() - started.getTime();
+    };
+    this.getTimeLeft = function () {
+        if (running) {
+            this.pause();
+            this.start();
+        }
+        return remaining;
+    };
+    this.setRemaining = function (time) {
+        this.remaining = time;
+    };
+    this.getStateRunning = function () {
+        return running;
+    };
+    this.destroy = function () {
+        clearTimeout(id);
+    };
+    return this.start();
+}
 class Player {
     /**
      * Creates a new player, returns one if it already exists.
@@ -44,8 +75,12 @@ class Player {
         this.queue = new (Utils_1.Structure.get("Queue"))();
         /** Whether the queue repeats the track. */
         this.trackRepeat = false;
+        /** Whether the queue repeat timeout is running*/
+        this.trackRepeatTimer = null;
         /** Whether the queue repeats the queue. */
         this.queueRepeat = false;
+        /** Whether the queue repeat timeout is running*/
+        this.queueRepeatTimer = null;
         /** The time the player is in the track. */
         this.position = 0;
         /** Whether the player is playing. */
@@ -279,11 +314,25 @@ class Player {
         if (repeat && duration) {
             this.trackRepeat = true;
             this.queueRepeat = false;
-            setTimeout(() => {
-                this.trackRepeat = false;
-            }, duration);
+            if (this.trackRepeatTimer) {
+                this.trackRepeatTimer.destroy();
+                this.trackRepeatTimer = timer(() => {
+                    this.trackRepeat = false;
+                    return this;
+                }, duration);
+            }
+            else {
+                this.trackRepeatTimer = timer(() => {
+                    this.trackRepeat = false;
+                    return this;
+                }, duration);
+            }
         }
         else if (repeat && !duration) {
+            this.trackRepeat = true;
+            this.queueRepeat = false;
+        }
+        else if (!repeat && !duration) {
             this.trackRepeat = false;
             this.queueRepeat = false;
         }
@@ -299,14 +348,30 @@ class Player {
             throw new TypeError('Repeat can only be "true" or "false".');
         if (duration && typeof duration !== "number")
             throw new TypeError("Duration can only be a number");
+        if (duration < this.queue.duration)
+            throw new TypeError("Duration cannot be smaller than the queue duration");
         if (repeat && duration) {
             this.trackRepeat = false;
             this.queueRepeat = true;
-            setTimeout(() => {
-                this.queueRepeat = false;
-            }, duration);
+            if (this.queueRepeatTimer) {
+                this.queueRepeatTimer.destroy();
+                this.queueRepeatTimer = timer(() => {
+                    this.queueRepeat = false;
+                    return this;
+                }, duration);
+            }
+            else {
+                this.queueRepeatTimer = timer(() => {
+                    this.queueRepeat = false;
+                    return this;
+                }, duration);
+            }
         }
         else if (repeat && !duration) {
+            this.trackRepeat = false;
+            this.queueRepeat = true;
+        }
+        else if (!repeat && !duration) {
             this.trackRepeat = false;
             this.queueRepeat = false;
         }
@@ -318,6 +383,12 @@ class Player {
             if (amount > this.queue.length)
                 throw new RangeError("Cannot skip more than the queue length.");
             this.queue.splice(0, amount - 1);
+        }
+        if (this.trackRepeatTimer && !this.queueRepeatTimer) {
+            this.trackRepeatTimer.destroy();
+        }
+        if (this.queueRepeatTimer && !this.trackRepeatTimer) {
+            this.queueRepeatTimer.destroy();
         }
         this.node.send({
             op: "stop",
@@ -337,6 +408,12 @@ class Player {
             return this;
         this.playing = !pause;
         this.paused = pause;
+        if (this.trackRepeatTimer && !this.queueRepeatTimer) {
+            this.trackRepeatTimer.pause();
+        }
+        if (this.queueRepeatTimer && !this.trackRepeatTimer) {
+            this.queueRepeatTimer.pause();
+        }
         this.node.send({
             op: "pause",
             guildId: this.guild,
@@ -358,6 +435,18 @@ class Player {
         if (position < 0 || position > this.queue.current.duration)
             position = Math.max(Math.min(position, this.queue.current.duration), 0);
         this.position = position;
+        if (this.trackRepeatTimer && !this.queueRepeatTimer) {
+            const timeleft = this.trackRepeatTimer.getTimeLeft();
+            const adjustedtime = timeleft - this.position;
+            this.trackRepeatTimer.setRemaining(adjustedtime);
+            this.trackRepeatTimer.getTimeLeft();
+        }
+        if (this.queueRepeatTimer && !this.trackRepeatTimer) {
+            const timeleft = this.queueRepeatTimer.getTimeLeft();
+            const adjustedtime = timeleft - this.position;
+            this.queueRepeatTimer.setRemaining(adjustedtime);
+            this.queueRepeatTimer.getTimeLeft();
+        }
         this.node.send({
             op: "seek",
             guildId: this.guild,

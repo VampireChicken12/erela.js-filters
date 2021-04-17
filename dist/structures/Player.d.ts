@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { Manager, SearchQuery, SearchResult } from "./Manager";
 import { Node } from "./Node";
 import { Queue } from "./Queue";
@@ -8,8 +9,12 @@ export declare class Player {
     readonly queue: Queue;
     /** Whether the queue repeats the track. */
     trackRepeat: boolean;
+    /** Whether the queue repeat timeout is running*/
+    trackRepeatTimer: timer | null;
     /** Whether the queue repeats the queue. */
     queueRepeat: boolean;
+    /** Whether the queue repeat timeout is running*/
+    queueRepeatTimer: timer | null;
     /** The time the player is in the track. */
     position: number;
     /** Whether the player is playing. */
@@ -201,4 +206,12 @@ export interface EqualizerBand {
     band: number;
     /** The gain amount being -0.25 to 1.00, 0.25 being double. */
     gain: number;
+}
+export interface timer {
+    destroy(): void;
+    start(): NodeJS.Timeout;
+    pause(): void;
+    getTimeLeft(): number;
+    getStateRunning(): boolean;
+    setRemaining(time: number): void;
 }
