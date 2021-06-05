@@ -72,14 +72,14 @@ export declare class Player {
      * Sets the players equalizer band on-top of the existing ones.
      * @param bands
      */
-    setEQ(...bands: EqualizerBand[]): this;
+    setEQ(...bands: EqualizerBands[]): this;
     /** Clears the equalizer bands. */
     clearEQ(): this;
     /** Sets filters
      * @param op
      * @param body
      */
-    setFilter(op: string, body?: {}): this;
+    setFilter(op: string, body?: PlayerFilterData): this;
     /** Connect to the voice channel. */
     connect(): this;
     /** Disconnect from the voice channel. */
@@ -204,11 +204,60 @@ export interface PlayOptions {
     /** Whether to not replace the track if a play payload is sent. */
     readonly noReplace?: boolean;
 }
-export interface EqualizerBand {
+export interface PlayerFilterData {
+    volume?: number;
+    tremolo?: PlayerFilterDataTremolo;
+    equalizer?: PlayerFilterDataEqualizerBands[];
+    timescale?: PlayerFilterDataTimescale;
+    karaoke?: PlayerFilterDataKaraoke;
+    channel_mix?: PlayerFilterDataChannelMix;
+    vibrato?: PlayerFilterDataVibrato;
+    rotation?: PlayerFilterDataRotation;
+    low_pass?: PlayerFilterDataLowPass;
+}
+export interface PlayerFilterDataTremolo {
+    frequency: number;
+    depth: number;
+}
+export interface PlayerFilterDataTimescale {
+    pitch: number;
+    pitch_octaves?: number;
+    picth_semi_tones?: number;
+    rate: number;
+    rate_change?: number;
+    speed?: number;
+    speed_change?: number;
+}
+export interface PlayerFilterDataKaraoke {
+    filter_band?: number;
+    filter_width?: number;
+    level: number;
+    mono_level?: number;
+}
+export interface PlayerFilterDataChannelMix {
+    right_to_left: number;
+    right_to_right: number;
+    left_to_right: number;
+    left_to_left: number;
+}
+export interface PlayerFilterDataVibrato {
+    frequency: number;
+    depth: number;
+}
+export interface PlayerFilterDataRotation {
+    rotation_hz: number;
+}
+export interface PlayerFilterDataLowPass {
+    smoothing: number;
+}
+export interface EqualizerBands {
     /** The band number being 0 to 14. */
     band: number;
     /** The gain amount being -0.25 to 1.00, 0.25 being double. */
     gain: number;
+}
+export interface PlayerFilterDataEqualizerBands {
+    bands: EqualizerBands[];
 }
 export interface timer {
     destroy(): void;
