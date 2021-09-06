@@ -95,6 +95,8 @@ export class Player {
   public trackRepeatTimer: timer | null = null;
   /** Whether the queue repeats the queue. */
   public queueRepeat = false;
+  /** Filter data for the player */
+  public filters = {};
   /** Whether the queue repeat timeout is running*/
   public queueRepeatTimer: timer | null = null;
   /** The time the player is in the track. */
@@ -234,6 +236,12 @@ export class Player {
    * @param body
    */
   public setFilter(op: string, body: PlayerFilterData = {}): this {
+    if (body.equalizer) {
+      body.equalizer.map((current) => {
+        current.bands.map(({ gain, band }) => (this.bands[band] = gain));
+      });
+    }
+    this.filters = body;
     this.node.send(Object.assign({ op: op, guildId: this.guild }, body));
     return this;
   }
