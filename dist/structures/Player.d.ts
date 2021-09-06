@@ -16,6 +16,8 @@ export declare class Player {
     trackRepeatTimer: timer | null;
     /** Whether the queue repeats the queue. */
     queueRepeat: boolean;
+    /** Filter data for the player */
+    filters: {};
     /** Whether the queue repeat timeout is running*/
     queueRepeatTimer: timer | null;
     /** The time the player is in the track. */

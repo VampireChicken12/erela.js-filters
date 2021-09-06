@@ -87,6 +87,8 @@ class Player {
         this.trackRepeatTimer = null;
         /** Whether the queue repeats the queue. */
         this.queueRepeat = false;
+        /** Filter data for the player */
+        this.filters = {};
         /** Whether the queue repeat timeout is running*/
         this.queueRepeatTimer = null;
         /** The time the player is in the track. */
@@ -189,6 +191,12 @@ class Player {
      * @param body
      */
     setFilter(op, body = {}) {
+        if (body.equalizer) {
+            body.equalizer.map((current) => {
+                current.bands.map(({ gain, band }) => (this.bands[band] = gain));
+            });
+        }
+        this.filters = body;
         this.node.send(Object.assign({ op: op, guildId: this.guild }, body));
         return this;
     }
